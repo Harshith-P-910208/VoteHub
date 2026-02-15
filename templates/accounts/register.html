@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - VoteHub College{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .req-box {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .req-list {
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .req-list li {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .req-list i {
+        color: #10b981;
+        font-size: 0.9rem;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-dim);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s;
+        margin-bottom: 2rem;
+    }
+
+    .back-btn:hover {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-container">
+        <div class="glass-card" style="max-width: 600px; width: 100%;">
+            <a href="{% url 'landing' %}" class="back-btn">
+                <i class="fas fa-chevron-left"></i> Back to Home
+            </a>
+
+            <div class="form-header">
+                <div style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Voter Registration</h1>
+                <p style="color: var(--text-dim);">Join the democratic process at VoteHub College</p>
+            </div>
+
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_full_name" class="form-label">Full Name</label>
+                    <input type="text" name="full_name" class="form-input" id="id_full_name" placeholder="Full name"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_student_id" class="form-label">Student ID Number</label>
+                    <input type="text" name="student_id" class="form-input" id="id_student_id"
+                        placeholder="12-14 character UUCMS number" pattern="[a-zA-Z0-9]{12,14}" maxlength="14"
+                        minlength="12" title="Please enter a valid 12-14 character alphanumeric UUCMS number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">College Email Address</label>
+                    <input type="email" name="email" id="email" class="form-input" placeholder="student@sfscollege.in"
+                        pattern=".+@sfscollege\.in" title="Please enter a valid college ID ending with @sfscollege.in"
+                        required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem;">
+                    Verify & Send OTP <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+
+            <div class="req-box">
+                <h3
+                    style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-circle-question" style="color: var(--primary-color);"></i> Pre-Registration
+                    Checklist
+                </h3>
+                <ul class="req-list">
+                    <li><i class="fas fa-check-circle"></i> Ensure you have access to your college email.</li>
+                    <li><i class="fas fa-check-circle"></i> Have your 12-14 character UUCMS Student ID ready.</li>
+                    <li><i class="fas fa-check-circle"></i> Password setup (after OTP) will require 8+ characters.</li>
+                </ul>
+            </div>
+
+            <div
+                style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                <p style="color: var(--text-dim); font-size: 0.95rem;">
+                    Already have an account?
+                    <a href="{% url 'login' %}"
+                        style="color: var(--primary-color); font-weight: 700; text-decoration: none;">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}College VoteHub - Secure Online Voting Platform for College Elections{% endblock %}
+
+{% block extra_css %}
+<style>
+    .selection-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 4rem 1.5rem;
+    }
+
+    .main-header {
+        text-align: center;
+        margin-bottom: 5rem;
+    }
+
+    .main-header h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        letter-spacing: -2px;
+        margin-bottom: 1rem;
+        /* Combined Colors: Indigo to Ruby Pink */
+        background: linear-gradient(135deg, #6366f1 0%, #f5576c 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+
+    .main-header p {
+        color: var(--text-dim);
+        font-size: 1.25rem;
+        font-weight: 400;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        width: 100%;
+        max-width: 1000px;
+        text-align: center;
+    }
+
+    .role-card {
+        padding: 4.5rem 2.5rem;
+        border-radius: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .role-card:hover {
+        transform: translateY(-15px);
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .portal-icon {
+        font-size: 3.5rem;
+        margin-bottom: 2rem;
+        transition: transform 0.4s;
+    }
+
+    /* Portal Specific Themes */
+    .student-icon {
+        color: #6366f1;
+    }
+
+    .admin-icon {
+        color: #f5576c;
+    }
+
+    .role-card h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .role-card p {
+        color: var(--text-dim);
+        font-size: 1rem;
+        margin-bottom: 3rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn-portal {
+        width: 100%;
+        padding: 1.1rem;
+        border-radius: 100px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.3s;
+        border: none;
+        color: white;
+    }
+
+    .btn-student {
+        background: #6366f1;
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-admin {
+        background: #f5576c;
+        box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
+    }
+
+    .btn-portal:hover {
+        transform: scale(1.03);
+        filter: brightness(1.1);
+    }
+
+    @media (max-width: 850px) {
+        .card-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .main-header h1 {
+            font-size: 3.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="selection-wrapper">
+    <header class="main-header">
+        <h1>College VoteHub</h1>
+        <p>Premium Election Portal</p>
+    </header>
+
+    <div class="card-grid">
+        <!-- Student Gateway -->
+        <a href="{% url 'login' %}" class="glass-card role-card">
+            <div class="portal-icon student-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2>Student Portal</h2>
+            <p>Secure student gateway for voting and election statistics.</p>
+            <div class="btn-portal btn-student">
+                Student Login <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Admin Gateway -->
+        <a href="{% url 'admin_login' %}" class="glass-card role-card">
+            <div class="portal-icon admin-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h2>Admin Portal</h2>
+            <p>Encrypted control panel for election overseers and staff.</p>
+            <div class="btn-portal btn-admin">
+                Admin Login <i class="fas fa-lock"></i>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

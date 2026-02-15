@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vote Confirmed{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/student.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <div class="success-icon">✅</div>
+
+    <h1 style="font-size: 3rem; margin-bottom: 1rem;">Vote Submitted Successfully!</h1>
+    <p style="font-size: 1.25rem; color: var(--text-secondary);">
+        Thank you for participating in the democratic process
+    </p>
+
+    <div class="confirmation-card">
+        <h2 style="margin-bottom: 1.5rem;">Vote Details</h2>
+
+        <div class="vote-details">
+            <div class="vote-detail-item">
+                <span class="vote-detail-label">Election:</span>
+                <span class="vote-detail-value">{{ election.title }}</span>
+            </div>
+
+            <div class="vote-detail-item">
+                <span class="vote-detail-label">Candidate:</span>
+                <span class="vote-detail-value">{{ candidate.name }}</span>
+            </div>
+
+            <div class="vote-detail-item">
+                <span class="vote-detail-label">Position:</span>
+                <span class="vote-detail-value">{{ candidate.position }}</span>
+            </div>
+
+            <div class="vote-detail-item">
+                <span class="vote-detail-label">Location:</span>
+                <span class="vote-detail-value">{{ vote.city }}, {{ vote.country }}</span>
+            </div>
+
+            <div class="vote-detail-item">
+                <span class="vote-detail-label">Time:</span>
+                <span class="vote-detail-value">{{ vote.voted_at|date:"M d, Y - h:i A" }}</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{% url 'student_dashboard' %}" class="btn btn-primary" style="padding: 1rem 2rem;">
+                Return to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div
+        style="margin-top: 2rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: var(--radius-md); border: 1px solid rgba(16, 185, 129, 0.3);">
+        <p style="color: #6ee7b7; text-align: center; margin: 0;">
+            🔒 Your vote has been securely recorded and cannot be changed
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Elections - Admin Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 3rem;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 1rem;
+        margin-top: -1rem;
+    }
+
+    .premium-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        color: var(--text-dim);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+
+    .premium-table tr td {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .premium-table tr td:first-child {
+        border-radius: 20px 0 0 20px;
+        border-left: 1px solid var(--border-color);
+    }
+
+    .premium-table tr td:last-child {
+        border-radius: 0 20px 20px 0;
+        border-right: 1px solid var(--border-color);
+    }
+
+    .status-pill {
+        padding: 0.4rem 0.8rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-upcoming {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-ended {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-dim);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .action-btn {
+        padding: 0.4rem 0.9rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header-section">
+        <div>
+            <h1
+                style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                Election Management
+            </h1>
+            <p style="color: var(--text-dim); margin-top: 0.5rem;">Configure and monitor your college elections</p>
+        </div>
+        <a href="{% url 'create_election' %}" class="btn btn-admin">
+            <i class="fas fa-plus"></i> New Election
+        </a>
+    </div>
+
+    {% if elections %}
+    <table class="premium-table">
+        <thead>
+            <tr>
+                <th>Election Title</th>
+                <th>Timeline</th>
+                <th>Participation</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for election in elections %}
+            <tr>
+                <td>
+                    <div style="font-weight: 700; color: white; font-size: 1.1rem;">{{ election.title }}</div>
+                </td>
+                <td>
+                    <div style="font-size: 0.85rem; color: var(--text-dim);">
+                        <i class="fas fa-calendar" style="margin-right: 0.5rem; opacity: 0.5;"></i>
+                        {{ election.start_date|date:"M j, Y" }} - {{ election.end_date|date:"M j, Y" }}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size: 0.85rem; font-weight: 600;">
+                        <i class="fas fa-check-to-slot" style="margin-right: 0.5rem; color: var(--admin-color);"></i>
+                        {{ election.vote_count }} Votes
+                    </div>
+                </td>
+                <td>
+                    {% if election.is_ongoing %}
+                    <span class="status-pill status-active">Active</span>
+                    {% elif election.has_ended %}
+                    <span class="status-pill status-ended">Ended</span>
+                    {% else %}
+                    <span class="status-pill status-upcoming">Upcoming</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{% url 'view_results' election.pk %}" class="action-btn"
+                            style="background: rgba(245, 87, 108, 0.1); color: var(--admin-color); border-color: rgba(245, 87, 108, 0.2);">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                        <a href="{% url 'manage_candidates' election.pk %}" class="action-btn"
+                            style="background: rgba(255, 255, 255, 0.03); color: white;">
+                            <i class="fas fa-users"></i>
+                        </a>
+                        <a href="{% url 'edit_election' election.pk %}" class="action-btn"
+                            style="background: rgba(255, 255, 255, 0.03); color: white;">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{% url 'delete_election' election.pk %}" style="display: inline;"
+                            onsubmit="return confirm('Delete this election? This cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn"
+                                style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border-color: rgba(239, 68, 68, 0.1); cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="glass-card" style="text-align: center; padding: 5rem;">
+        <i class="fas fa-calendar-xmark" style="font-size: 4rem; opacity: 0.1; margin-bottom: 2rem;"></i>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No Elections Configured</h3>
+        <p style="color: var(--text-dim);">Get started by creating your first election cycle.</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 4rem; text-align: center;">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Election - VoteHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .compact-form-container {
+        max-width: 650px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .form-header-compact {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .premium-card-compact {
+        background: var(--card-bg);
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--border-color);
+        border-radius: 28px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-row-compact {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-group-compact {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 1rem;
+        margin-top: 2.5rem;
+    }
+
+    .election-badge-mini {
+        display: inline-block;
+        padding: 0.35rem 1rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary-color);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 500px) {
+        .form-row-compact {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-group-compact {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="compact-form-container">
+    <div class="form-header-compact">
+        <div class="election-badge-mini">New Registration</div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 0.5rem;">Create Election</h1>
+        <p style="color: var(--text-dim); font-size: 1rem;">Configure the parameters for the new voting cycle</p>
+    </div>
+
+    <div class="premium-card-compact">
+        <form method="post" action="{% url 'create_election' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="title" class="form-label">Election Title</label>
+                <input type="text" name="title" id="title" class="form-input"
+                    placeholder="e.g., Student Council President 2026" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description / Purpose</label>
+                <textarea name="description" id="description" class="form-input"
+                    style="min-height: 100px; padding: 1rem; resize: none;"
+                    placeholder="Describe the scope and objectives of this election..." required></textarea>
+            </div>
+
+            <div class="form-row-compact">
+                <div class="form-group">
+                    <label for="start_date" class="form-label">Start Window</label>
+                    <input type="datetime-local" name="start_date" id="start_date" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date" class="form-label">Closing Window</label>
+                    <input type="datetime-local" name="end_date" id="end_date" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="btn-group-compact">
+                <button type="submit" class="btn btn-admin">
+                    Launch & Add Candidates <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+                </button>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">
+                    Return to Home
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

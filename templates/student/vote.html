@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vote - {{ election.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/student.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="voting-container">
+    <div class="election-header">
+        <h1>{{ election.title }}</h1>
+        <p>{{ election.description }}</p>
+    </div>
+
+    <!-- Voting Identity Card -->
+    <div class="identity-card"
+        style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 1.5rem; backdrop-filter: blur(10px);">
+        <div class="identity-photo">
+            {% if user.profile_image_base64 %}
+            <img src="{{ user.profile_image_base64 }}" alt="Profile"
+                style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover;">
+            {% elif user.profile_image %}
+            <img src="{{ user.profile_image.url }}" alt="Profile"
+                style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover;">
+            {% else %}
+            <div
+                style="width: 80px; height: 80px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                👤
+            </div>
+            {% endif %}
+        </div>
+        <div class="identity-details">
+            <div style="font-size: 0.9rem; color: var(--accent); font-weight: 600; text-transform: uppercase;">Voting
+                Identity</div>
+            <h2 style="margin: 0.25rem 0;">{{ user.full_name }}</h2>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                Student ID: <strong>{{ user.student_id }}</strong> | Email: {{ user.email }}
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'submit_vote' election.pk %}" id="vote-form">
+        {% csrf_token %}
+
+        <!-- Hidden inputs for data -->
+        <input type="hidden" name="candidate_id" id="candidate-id-input">
+        <input type="hidden" name="voter_image" id="voter-image-input">
+        <input type="hidden" name="latitude" id="latitude-input">
+        <input type="hidden" name="longitude" id="longitude-input">
+        <input type="hidden" name="city" id="city-input">
+        <input type="hidden" name="country" id="country-input">
+        <input type="hidden" id="auto-get-location" value="true">
+
+        <!-- Candidates Section -->
+        <div class="candidates-section">
+            <h2 style="margin-bottom: 1.5rem;">Select Your Candidate</h2>
+            <div class="candidates-grid">
+                {% for candidate in candidates %}
+                <div class="candidate-card" data-candidate-id="{{ candidate.pk }}">
+                    {% if candidate.image %}
+                    <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" class="candidate-image">
+                    {% else %}
+                    <div class="candidate-image"
+                        style="background: var(--primary-gradient); display: flex; align-items: center; justify-content: center; font-size: 4rem;">
+                        👤
+                    </div>
+                    {% endif %}
+                    <h3 class="candidate-name">{{ candidate.name }}</h3>
+                    <p class="candidate-position">{{ candidate.position }}</p>
+                    <p class="candidate-description">{{ candidate.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Webcam Section -->
+        <div class="webcam-section">
+            <h2 style="margin-bottom: 1rem;">📸 Capture Your Photo</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                We need to capture your photo for verification purposes
+            </p>
+
+            <div class="webcam-container">
+                <video id="webcam" autoplay playsinline muted
+                    style="display: none; width: 100%; border-radius: 12px; border: 2px solid var(--accent);"></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+
+            <div class="webcam-controls">
+                <button type="button" id="start-webcam" class="btn btn-primary">
+                    Start Camera
+                </button>
+                <button type="button" id="capture-image" class="btn btn-success" style="display: none;">
+                    Capture Photo
+                </button>
+                <button type="button" id="retake-image" class="btn btn-secondary" style="display: none;">
+                    Retake Photo
+                </button>
+            </div>
+
+            <div id="image-preview" class="image-preview" style="display: none;">
+                <h3 style="color: var(--success); margin-bottom: 1rem;">✓ Photo Captured</h3>
+                <img id="preview-img" alt="Captured photo">
+            </div>
+        </div>
+
+
+        <!-- Location Section (Visible with status) -->
+        <div class="location-section" style="margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 1rem;">📍 Location Verification</h2>
+            <div id="location-info"
+                style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem;">
+                <div id="location-status" style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="spinner" id="location-spinner"
+                        style="width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;">
+                    </div>
+                    <span id="location-text" style="color: var(--text-secondary);">Capturing your location...</span>
+                </div>
+                <div id="location-success" style="display: none; color: var(--success);">
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">✓</span>
+                    <span id="location-display"></span>
+                </div>
+                <div id="location-error" style="display: none; color: #f5576c;">
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">⚠️</span>
+                    <span>Location access denied. Please enable location permissions to vote.</span>
+                </div>
+            </div>
+            <!-- Auto-trigger button for the script -->
+            <button type="button" id="get-location-btn" style="display: none;"></button>
+        </div>
+
+        <style>
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+            <button type="submit" id="submit-vote-btn" class="submit-btn" disabled>
+                Submit Your Vote
+            </button>
+            <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">
+                Please select a candidate and capture your photo to submit
+            </p>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/webcam.js' %}"></script>
+<script src="{% static 'js/geolocation.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Candidate Selection Logic
+        const cards = document.querySelectorAll('.candidate-card');
+        const input = document.getElementById('candidate-id-input');
+
+        cards.forEach(card => {
+            card.addEventListener('click', function () {
+                // Remove active class from all
+                cards.forEach(c => c.classList.remove('selected'));
+
+                // Add to clicked
+                this.classList.add('selected');
+
+                // Update hidden input
+                input.value = this.dataset.candidateId;
+
+                // Update submit button state (function from webcam.js)
+                if (typeof updateSubmitButton === 'function') {
+                    updateSubmitButton();
+                }
+            });
+        });
+    });
+</script>
+<style>
+    .candidate-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .candidate-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .candidate-card.selected {
+        border-color: var(--accent);
+        background: rgba(102, 126, 234, 0.1);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+</style>
+{% endblock %}

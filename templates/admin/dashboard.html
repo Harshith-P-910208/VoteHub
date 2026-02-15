@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - VoteHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        margin-bottom: 3rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border-color: rgba(245, 87, 108, 0.2);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        color: var(--admin-color);
+        margin-bottom: 1rem;
+        background: rgba(245, 87, 108, 0.1);
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-dim);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .action-card {
+        padding: 2.5rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        transition: all 0.4s ease;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .action-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--admin-color);
+        background: rgba(245, 87, 108, 0.03);
+    }
+
+    .action-icon {
+        font-size: 3rem;
+        color: var(--admin-color);
+        opacity: 0.8;
+    }
+
+    .table-container {
+        margin-top: 3rem;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 1rem;
+        margin-top: -1rem;
+    }
+
+    .premium-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        color: var(--text-dim);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+
+    .premium-table tr td {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .premium-table tr td:first-child {
+        border-left: 1px solid var(--border-color);
+        border-radius: 20px 0 0 20px;
+    }
+
+    .premium-table tr td:last-child {
+        border-right: 1px solid var(--border-color);
+        border-radius: 0 20px 20px 0;
+    }
+
+    .status-pill {
+        padding: 0.4rem 0.8rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-upcoming {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-ended {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-dim);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 968px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1
+            style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%); background-clip: text; -webkit-text-fill-color: transparent;">
+            Admin Dashboard
+        </h1>
+        <p style="color: var(--text-dim); font-size: 1.1rem;">Manage elections and monitor system statistics</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="stat-value">{{ total_elections }}</div>
+            <div class="stat-label">Total Elections</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-vote-yea"></i></div>
+            <div class="stat-value">{{ active_elections }}</div>
+            <div class="stat-label">Active Now</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Registered Voters</div>
+        </div>
+        <div class="glass-card stat-card">
+            <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+            <div class="stat-value">{{ total_votes }}</div>
+            <div class="stat-label">Total Votes</div>
+        </div>
+    </div>
+
+
+
+    <!-- Quick Actions -->
+    <div class="action-grid">
+        <a href="{% url 'manage_elections' %}" class="glass-card action-card">
+            <div class="action-icon"><i class="fas fa-box-archive"></i></div>
+            <div style="flex-grow: 1;">
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Manage Elections</h3>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Create, edit, and monitor your election cycles</p>
+                <div style="margin-top: 1rem; color: var(--admin-color); font-weight: 600; font-size: 0.8rem;">
+                    {{ active_elections }} Active • {{ total_elections }} Total
+                </div>
+            </div>
+            <i class="fas fa-chevron-right" style="opacity: 0.3;"></i>
+        </a>
+
+        <a href="{% url 'manage_students' %}" class="glass-card action-card">
+            <div class="action-icon"><i class="fas fa-user-gear"></i></div>
+            <div style="flex-grow: 1;">
+                <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Manage Students</h3>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Maintain and verify voter registration records</p>
+                <div style="margin-top: 1rem; color: var(--admin-color); font-weight: 600; font-size: 0.8rem;">
+                    {{ total_students }} Registered
+                </div>
+            </div>
+            <i class="fas fa-chevron-right" style="opacity: 0.3;"></i>
+        </a>
+    </div>
+
+    <!-- Recent Elections Table -->
+    <div class="table-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.8rem; font-weight: 700;">Recent Elections</h2>
+            <a href="{% url 'create_election' %}" class="btn btn-admin"
+                style="font-size: 0.85rem; padding: 0.6rem 1.2rem;">
+                <i class="fas fa-plus"></i> New Election
+            </a>
+        </div>
+
+        {% if recent_elections %}
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Election Title</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for election in recent_elections %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 700; font-size: 1.1rem; color: white;">{{ election.title }}</div>
+                    </td>
+                    <td style="color: var(--text-dim);">{{ election.start_date|date:"M d, Y" }}</td>
+                    <td style="color: var(--text-dim);">{{ election.end_date|date:"M d, Y" }}</td>
+                    <td>
+                        {% if election.is_ongoing %}
+                        <span class="status-pill status-active">Active</span>
+                        {% elif election.has_ended %}
+                        <span class="status-pill status-ended">Ended</span>
+                        {% else %}
+                        <span class="status-pill status-upcoming">Upcoming</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{% url 'edit_election' election.pk %}" class="btn btn-outline"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Edit</a>
+                            <a href="{% url 'view_results' election.pk %}" class="btn btn-admin"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Results</a>
+                            <a href="{% url 'manage_candidates' election.pk %}" class="btn btn-outline"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Candidates</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="glass-card" style="text-align: center; padding: 4rem 2rem;">
+            <i class="fas fa-box-open" style="font-size: 3rem; opacity: 0.2; margin-bottom: 1.5rem;"></i>
+            <p style="color: var(--text-dim);">No elections created yet. Create your first election above.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

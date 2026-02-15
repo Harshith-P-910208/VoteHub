@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Student Dashboard - VoteHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        margin-bottom: 3rem;
+    }
+
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-upcoming {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-ended {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .elections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .election-card {
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .election-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .election-description {
+        color: var(--text-dim);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .election-meta {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 1.5rem;
+    }
+
+    .profile-banner {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 4rem;
+        padding: 3rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="glass-card profile-banner">
+        <div class="profile-preview">
+            {% if user.profile_image_base64 %}
+            <img src="{{ user.profile_image_base64 }}" alt="Profile"
+                style="width: 120px; height: 120px; border-radius: 30px; border: 4px solid var(--primary-color); object-fit: cover; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);">
+            {% elif user.profile_image %}
+            <img src="{{ user.profile_image.url }}" alt="Profile"
+                style="width: 120px; height: 120px; border-radius: 30px; border: 4px solid var(--primary-color); object-fit: cover; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);">
+            {% else %}
+            <div
+                style="width: 120px; height: 120px; border-radius: 30px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 3rem; border: 2px dashed rgba(255,255,255,0.1);">
+                <i class="fas fa-user-graduate" style="color: var(--primary-color);"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div>
+            <h1
+                style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%); background-clip: text; -webkit-text-fill-color: transparent;">
+                Welcome back, {{ user.full_name }}!
+            </h1>
+            <p style="color: var(--text-dim); font-size: 1.1rem;">
+                Student ID: <span style="color: var(--primary-color); font-weight: 700;">{{ user.student_id }}</span> •
+                Status: <span style="color: #10b981; font-weight: 700;">Verified Account</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Elections Area -->
+    <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">Active Elections</h2>
+            <p style="color: var(--text-dim);">Participate in your college's democratic process</p>
+        </div>
+        <div class="status-badge" style="background: rgba(255,255,255,0.05); color: white;">
+            Total: {{ elections|length }} Elections
+        </div>
+    </div>
+
+    {% if elections %}
+    <div class="elections-grid">
+        {% for data in elections %}
+        <div class="glass-card election-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <div class="status-badge status-{{ data.status }}">
+                    {% if data.status == 'active' %}Active Now
+                    {% elif data.status == 'upcoming' %}Upcoming
+                    {% else %}Completed
+                    {% endif %}
+                </div>
+                {% if data.has_voted %}
+                <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.2rem;"></i>
+                {% endif %}
+            </div>
+
+            <h3 class="election-title">{{ data.election.title }}</h3>
+            <p class="election-description">{{ data.election.description|truncatewords:20 }}</p>
+
+            <div class="election-meta">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-calendar-alt" style="color: var(--primary-color); opacity: 0.7;"></i>
+                    <span>Starts: {{ data.election.start_date|date:"F j, Y, g:i a" }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-hourglass-end" style="color: #ef4444; opacity: 0.7;"></i>
+                    <span>Ends: {{ data.election.end_date|date:"F j, Y, g:i a" }}</span>
+                </div>
+            </div>
+
+            {% if data.has_voted %}
+            <button class="btn btn-outline" disabled
+                style="width: 100%; cursor: not-allowed; background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); color: #10b981;">
+                <i class="fas fa-check-double"></i> Vote Submitted
+            </button>
+            {% elif data.can_vote %}
+            <a href="{% url 'vote_page' data.election_id %}" class="btn btn-primary" style="width: 100%;">
+                Cast Your Vote <i class="fas fa-arrow-right"></i>
+            </a>
+            {% elif data.status == 'upcoming' %}
+            <button class="btn btn-outline" disabled style="width: 100%; cursor: not-allowed;">
+                <i class="fas fa-clock"></i> Not Started Yet
+            </button>
+            {% else %}
+            <button class="btn btn-outline" disabled style="width: 100%; cursor: not-allowed;">
+                <i class="fas fa-lock"></i> Voting Ended
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card" style="text-align: center; padding: 5rem 2rem;">
+        <i class="fas fa-box-open"
+            style="font-size: 4rem; color: var(--text-dim); margin-bottom: 2rem; opacity: 0.3;"></i>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No Elections Found</h3>
+        <p style="color: var(--text-dim);">There are currently no elections scheduled. Stay tuned!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Silent Geolocation Update -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                let city = '';
+                let country = '';
+
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+                    const data = await response.json();
+                    city = data.address.city || data.address.town || data.address.village || '';
+                    country = data.address.country || '';
+                } catch (e) { console.error("Geocoding failed", e); }
+
+                const formData = new FormData();
+                formData.append('latitude', lat);
+                formData.append('longitude', lon);
+                formData.append('city', city);
+                formData.append('country', country);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                try {
+                    await fetch('{% url "update_location" %}', { method: 'POST', body: formData });
+                } catch (e) { }
+            }, (err) => {
+                console.warn("Location access denied or failed", err);
+            }, { timeout: 10000, enableHighAccuracy: false });
+        }
+    });
+</script>
+{% endblock %}

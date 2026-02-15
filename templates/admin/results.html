@@ -1,0 +1,507 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Results - {{ election.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .result-card {
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .winner-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+        color: #000;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        z-index: 5;
+    }
+
+    .candidate-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .vote-count {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--admin-color);
+        margin: 1rem 0;
+    }
+
+    .percentage {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dim);
+    }
+
+    .progress-track {
+        height: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 100px;
+        margin-top: 1.5rem;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--admin-color);
+        border-radius: 100px;
+        width: 0;
+        transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .voters-table-container {
+        margin-top: 4rem;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.75rem;
+    }
+
+    .premium-table td {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .premium-table tr td:first-child {
+        border-radius: 16px 0 0 16px;
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .premium-table tr td:last-child {
+        border-radius: 0 16px 16px 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .voter-thumb {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.8rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 100px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .candidate-img-container {
+        width: 120px;
+        height: 120px;
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .candidate-img-card {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .candidate-placeholder {
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: var(--text-dim);
+    }
+
+    .winner-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(15px);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        animation: fadeIn 0.4s ease;
+    }
+
+    .winner-modal {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 40px;
+        max-width: 500px;
+        width: 100%;
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transform: scale(0.8);
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .winner-modal.active {
+        transform: scale(1);
+    }
+
+    .modal-winner-badge {
+        background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+        color: #000;
+        padding: 0.5rem 1.5rem;
+        border-radius: 100px;
+        font-weight: 900;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 2rem;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+    }
+
+    .modal-winner-img {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 2rem;
+        border: 6px solid var(--admin-color);
+        box-shadow: 0 0 30px rgba(245, 87, 108, 0.4);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+        background: var(--admin-color);
+        transform: rotate(90deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;">
+                <h1 style="font-size: 2.8rem; font-weight: 800; color: white;">{{ election.title }}</h1>
+                {% if election.has_ended or True %}
+                <div class="live-indicator"
+                    style="background: rgba(245, 87, 108, 0.1); color: var(--admin-color); border-color: rgba(245, 87, 108, 0.2);">
+                    <i class="fas fa-flag-checkered"></i>
+                    {% if election.has_ended %}
+                    FINAL RESULTS
+                    {% else %}
+                    LIVE STANDINGS
+                    {% endif %}
+                </div>
+                <button id="showWinnerBtn" class="btn btn-admin"
+                    style="padding: 0.5rem 1.2rem; font-size: 0.75rem; border-radius: 100px; margin-left: 0.5rem;">
+                    <i class="fas fa-crown"></i> SHOW WINNER
+                </button>
+                {% else %}
+                <div class="live-indicator"><span class="pulse-dot"></span> LIVE MONITORING</div>
+                {% endif %}
+            </div>
+            <p style="color: var(--text-dim); font-size: 1rem;">Official auditing and results tabulation portal</p>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Total Participation
+            </div>
+            <div style="font-size: 3.2rem; font-weight: 800; color: var(--admin-color);">{{ total_votes }}</div>
+            <div style="font-size: 0.7rem; color: var(--text-dim);">Refreshing in <span id="refresh-timer">10</span>s
+            </div>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;"><i class="fas fa-users-viewfinder"></i> Candidate Standings
+    </h2>
+    <div class="results-grid">
+        {% for result in results %}
+        <div class="glass-card result-card">
+            {% if forloop.first and result.votes > 0 %}
+            <div class="winner-badge">
+                <i class="fas fa-crown"></i>
+                {% if election.has_ended %}
+                WINNER
+                {% else %}
+                LEADING
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% if result.candidate.image %}
+            <div class="candidate-img-container">
+                <img src="{{ result.candidate.image.url }}" class="candidate-img-card"
+                    alt="{{ result.candidate.name }}">
+            </div>
+            {% else %}
+            <div class="candidate-img-container">
+                <div class="candidate-placeholder"><i class="fas fa-user"></i></div>
+            </div>
+            {% endif %}
+
+            <h3 class="candidate-name">{{ result.candidate.name }}</h3>
+
+            <div style="margin: 1.5rem 0 1rem 0;">
+                <div style="display: flex; align-items: baseline; gap: 0.6rem;">
+                    <span style="font-size: 3.5rem; font-weight: 900; color: white;">{{ result.votes }}</span>
+                    <span style="font-size: 1rem; color: var(--text-dim);">Votes</span>
+                </div>
+                <div style="font-size: 1.1rem; color: var(--admin-color);">{{ result.percentage }}% Overall</div>
+            </div>
+
+            <div class="progress-track">
+                <div class="progress-fill" data-percent="{{ result.percentage }}"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="voters-table-container">
+        <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;"><i class="fas fa-list-check"></i> Real-time Audit Log</h2>
+        {% if votes %}
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th style="padding: 1rem; text-align: left;">Voter Identity</th>
+                    <th style="padding: 1rem; text-align: left;">Live Capture</th>
+                    <th style="padding: 1rem; text-align: left;">Selection</th>
+                    <th style="padding: 1rem; text-align: left;">Origin</th>
+                    <th style="padding: 1rem; text-align: left;">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vote in votes %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            {% if vote.user_profile.profile_image_base64 %}
+                            <img src="{{ vote.user_profile.profile_image_base64 }}" class="voter-thumb">
+                            {% elif vote.user_profile.profile_image %}
+                            <img src="{{ vote.user_profile.profile_image.url }}" class="voter-thumb">
+                            {% elif vote.voter_image %}
+                            <img src="{{ vote.voter_image.url }}" class="voter-thumb">
+                            {% else %}
+                            <div
+                                style="width: 45px; height: 45px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 700;">{{ vote.user_profile.full_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);">ID: {{
+                                    vote.user_profile.student_id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if vote.voter_image %}
+                        <img src="{{ vote.voter_image.url }}" class="voter-thumb" style="border-radius: 8px;">
+                        {% else %}
+                        <i class="fas fa-camera-slash" style="opacity: 0.2;"></i>
+                        {% endif %}
+                    </td>
+                    <td><span style="font-weight: 700; color: var(--admin-color);">{{ vote.candidate_name }}</span></td>
+                    <td>
+                        <div style="font-size: 0.85rem;">
+                            <a href="https://www.google.com/maps?q={{ vote.latitude|default:0 }},{{ vote.longitude|default:0 }}"
+                                target="_blank" style="color: inherit; text-decoration: none;">
+                                <i class="fas fa-location-dot" style="color: #ef4444;"></i>
+                                {{ vote.city|default:"" }}
+                                {% if vote.city and vote.country %}, {% endif %}
+                                {{ vote.country|default:"Unknown Location" }}
+                            </a>
+                        </div>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--text-dim);">{{ vote.voted_at|date:"M d, g:i A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="glass-card" style="text-align: center; padding: 4rem;">
+            <p style="color: var(--text-dim);">No votes have been recorded yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 4rem; text-align: center;"><a href="{% url 'admin_dashboard' %}" class="btn btn-outline"><i
+                class="fas fa-arrow-left"></i> Back to Dashboard</a></div>
+</div>
+
+{% if results %}
+{% with winner=results.0 %}
+<div class="winner-modal-overlay" id="winnerOverlay">
+    <div class="winner-modal" id="winnerModal"
+        style="background: rgba(20, 20, 20, 0.95); border: 2px solid var(--admin-color);">
+        <div class="close-modal" id="closeWinnerModal"><i class="fas fa-times"></i></div>
+        <div class="modal-winner-badge">OFFICIAL WINNER</div>
+        {% if winner.candidate.image %}
+        <img src="{{ winner.candidate.image.url }}" class="modal-winner-img">
+        {% else %}
+        <div class="modal-winner-img"
+            style="display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05);"><i
+                class="fas fa-user" style="font-size: 5rem; opacity: 0.3;"></i></div>
+        {% endif %}
+        <h1 style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 2rem;">
+            {{ winner.candidate.name }}
+        </h1>
+        <div class="glass-card"
+            style="display: inline-block; padding: 1.5rem 3rem; background: rgba(255,255,255,0.05);">
+            <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem;">
+                Final Vote Count</div>
+            <div style="font-size: 3rem; font-weight: 900; color: white;">
+                {{ winner.votes }}
+            </div>
+            <div style="color: var(--admin-color); font-weight: 600;">
+                {{ winner.percentage }}% Majority
+            </div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let timeLeft = 10;
+        const timerElement = document.getElementById('refresh-timer');
+        const countdown = setInterval(() => {
+            if (timerElement) {
+                timeLeft--;
+                timerElement.innerText = timeLeft;
+                if (timeLeft <= 0) { clearInterval(countdown); window.location.reload(); }
+            }
+        }, 1000);
+
+        setTimeout(() => {
+            document.querySelectorAll('.progress-fill').forEach(fill => { fill.style.width = fill.dataset.percent + '%'; });
+        }, 100);
+
+        const showWinnerBtn = document.getElementById('showWinnerBtn');
+        const winnerOverlay = document.getElementById('winnerOverlay');
+        const winnerModal = document.getElementById('winnerModal');
+        const closeWinnerModal = document.getElementById('closeWinnerModal');
+
+        if (showWinnerBtn && winnerOverlay) {
+            showWinnerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                winnerOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    winnerModal.classList.add('active');
+                    if (window.confetti) { fireConfetti(); }
+                    else { loadConfetti(fireConfetti); }
+                }, 10);
+            });
+
+            closeWinnerModal.addEventListener('click', () => {
+                winnerModal.classList.remove('active');
+                setTimeout(() => { winnerOverlay.style.display = 'none'; }, 500);
+            });
+
+            winnerOverlay.addEventListener('click', (e) => {
+                if (e.target === winnerOverlay) closeWinnerModal.click();
+            });
+        }
+
+        function loadConfetti(callback) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+            script.onload = callback;
+            document.body.appendChild(script);
+        }
+
+        function fireConfetti() {
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#f5576c', '#fcd34d', '#ffffff'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#f5576c', '#fcd34d', '#ffffff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    });
+</script>
+{% endblock %}

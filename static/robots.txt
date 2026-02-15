@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/logout/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://votehub-3cn2.onrender.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
