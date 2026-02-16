@@ -36,7 +36,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = ['*', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
+ALLOWED_HOSTS = ['*', '.railway.app', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
 DEBUG = True
 
 # CSRF & Session Security
@@ -59,8 +59,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8001',
     'http://127.0.0.1:8001',
-    'https://college-votehub.vercel.app',
-    '.vercel.app',
+    'https://*.railway.app',
 ]
 
 # Security settings for hosting (Vercel/Proxies)
@@ -195,7 +194,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build') # Vercel uses this directory name
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Standard directory for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files (User uploaded content)
