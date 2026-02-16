@@ -1,1 +1,1 @@
-web: gunicorn college_voting.wsgi --log-file -
+web: gunicorn college_voting.wsgi:application
