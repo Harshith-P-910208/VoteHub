@@ -36,10 +36,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['*', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
-# FORCE DEBUG=True for localhost development to fix "Live Server" issues and CSRF
-DEBUG = True 
+DEBUG = True
 
 # CSRF & Session Security
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
@@ -86,7 +84,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'college_voting.middleware.GlobalErrorHandlingMiddleware', # DEBUG: Catch ALL errors
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
