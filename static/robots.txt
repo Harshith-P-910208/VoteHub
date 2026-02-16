@@ -5,7 +5,7 @@ Disallow: /accounts/logout/
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://votehub-3cn2.onrender.com/sitemap.xml
+Sitemap: https://college-voting-system-d92y.onrender.com/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1
