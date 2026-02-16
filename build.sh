@@ -7,3 +7,6 @@ pip install -r requirements.txt
 
 # Collect static files
 python manage.py collectstatic --noinput
+
+# Run migrations (won't break the build if DB is unreachable)
+python manage.py migrate --noinput || echo "Migration failed or database unreachable during build. Skipping..."
