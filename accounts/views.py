@@ -60,9 +60,11 @@ def register(request):
                 messages.error(request, 'All fields are required.')
                 return render(request, 'accounts/register.html', context)
 
-            if not email.endswith('@sfscollege.in'):
-                messages.error(request, 'Please enter a valid college ID ending with @sfscollege.in')
-                return render(request, 'accounts/register.html', context)
+            # Optional: Enforce college domain if needed for production
+            # if not email.endswith('@sfscollege.in'):
+            #     messages.error(request, 'Please enter a valid college ID ending with @sfscollege.in')
+            #     return render(request, 'accounts/register.html', context)
+
 
             if not student_id.isalnum() or not (12 <= len(student_id) <= 14):
                 messages.error(request, 'Student ID must be a 12-14 character alphanumeric UUCMS number.')
