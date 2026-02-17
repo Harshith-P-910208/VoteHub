@@ -1,5 +1,6 @@
 from django.core.mail.backends.smtp import EmailBackend as DjangoEmailBackend
 import ssl
+import smtplib
 
 class EmailBackend(DjangoEmailBackend):
     """

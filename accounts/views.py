@@ -12,7 +12,11 @@ from .models import User
 from .utils import generate_otp, send_otp_email
 import base64
 import time
+import logging
 from django.core.files.base import ContentFile
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 
@@ -30,53 +34,74 @@ def landing(request):
 
 
 def register(request):
+    """
+    Handles student registration: validates input, sends OTP, and stores data in session.
+    """
     if request.user.is_authenticated:
         if request.user.is_admin:
             return redirect('admin_dashboard')
         return redirect('student_dashboard')
     
     if request.method == 'POST':
-        email = request.POST.get('email')
-        full_name = request.POST.get('full_name')
-        student_id = request.POST.get('student_id')
+        email = request.POST.get('email', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        student_id = request.POST.get('student_id', '').strip()
         
-        # Simple validation
-        if not email or not full_name or not student_id:
-            messages.error(request, 'All fields are required.')
-            return render(request, 'accounts/register.html')
-
-        if not email.endswith('@sfscollege.in'):
-            messages.error(request, 'Please enter a valid college ID (@sfscollege.in)')
-            return render(request, 'accounts/register.html')
-
-        if not student_id.isalnum() or not (12 <= len(student_id) <= 14):
-            messages.error(request, 'Student ID must be a 12-14 character alphanumeric UUCMS number.')
-            return render(request, 'accounts/register.html')
-        
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'This email is already registered.')
-            return render(request, 'accounts/register.html')
-
-        # Generate OTP
-        otp = generate_otp()
-        
-        # Store registration data in session
-        registration_data = {
+        # Context to pass back to template in case of error
+        context = {
             'email': email,
             'full_name': full_name,
-            'student_id': student_id,
-            'otp': otp,
-            'timestamp': time.time(),
+            'student_id': student_id
         }
-        request.session['registration_data'] = registration_data
         
-        # Send OTP
         try:
-            send_otp_email(email, otp)
-            messages.success(request, f'An OTP has been sent to {email}.')
-            return redirect('verify_otp')
+            # 1. Basic Validation
+            if not email or not full_name or not student_id:
+                messages.error(request, 'All fields are required.')
+                return render(request, 'accounts/register.html', context)
+
+            if not email.endswith('@sfscollege.in'):
+                messages.error(request, 'Please enter a valid college ID ending with @sfscollege.in')
+                return render(request, 'accounts/register.html', context)
+
+            if not student_id.isalnum() or not (12 <= len(student_id) <= 14):
+                messages.error(request, 'Student ID must be a 12-14 character alphanumeric UUCMS number.')
+                return render(request, 'accounts/register.html', context)
+            
+            # 2. Check Uniqueness
+            if User.objects.filter(email=email).exists():
+                messages.error(request, 'This email is already registered.')
+                return render(request, 'accounts/register.html', context)
+                
+            if User.objects.filter(student_id=student_id).exists():
+                messages.error(request, 'This Student ID is already registered.')
+                return render(request, 'accounts/register.html', context)
+
+            # 3. Generate OTP and store in session
+            otp = generate_otp()
+            registration_data = {
+                'email': email,
+                'full_name': full_name,
+                'student_id': student_id,
+                'otp': otp,
+                'timestamp': time.time(),
+            }
+            request.session['registration_data'] = registration_data
+            
+            # 4. Send OTP Email
+            try:
+                send_otp_email(email, otp)
+                messages.success(request, f'A verification code has been sent to {email}.')
+                return redirect('verify_otp')
+            except Exception as e:
+                logger.error(f"Registration Error (Email): {str(e)}")
+                messages.error(request, f'Failed to send verification email. Please check your internet or try again later.')
+                return render(request, 'accounts/register.html', context)
+
         except Exception as e:
-            messages.error(request, f'Error sending email: {e}')
+            logger.error(f"Registration Error (General): {str(e)}")
+            messages.error(request, f'An unexpected error occurred: {str(e)}')
+            return render(request, 'accounts/register.html', context)
     
     return render(request, 'accounts/register.html')
 
@@ -265,9 +290,10 @@ def resend_otp(request):
         # Determine purpose based on which flow we're in
         purpose = 'registration' if registration_data else 'password_reset'
         send_otp_email(data['email'], new_otp, purpose=purpose)
-        messages.success(request, f'A new OTP has been sent to {data["email"]}.')
+        messages.success(request, f'A new verification code has been sent to {data["email"]}.')
     except Exception as e:
-        messages.error(request, f'Error sending email: {e}')
+        logger.error(f"OTP Resend Error: {str(e)}")
+        messages.error(request, f'Failed to resend email. Please try again later.')
         
     return redirect('verify_otp' if registration_data else 'verify_reset_otp')
 

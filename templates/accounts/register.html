@@ -85,21 +85,22 @@
                 <div class="form-group">
                     <label for="id_full_name" class="form-label">Full Name</label>
                     <input type="text" name="full_name" class="form-input" id="id_full_name" placeholder="Full name"
-                        required>
+                        value="{{ full_name|default:'' }}" required>
                 </div>
 
                 <div class="form-group">
                     <label for="id_student_id" class="form-label">Student ID Number</label>
                     <input type="text" name="student_id" class="form-input" id="id_student_id"
                         placeholder="12-14 character UUCMS number" pattern="[a-zA-Z0-9]{12,14}" maxlength="14"
-                        minlength="12" title="Please enter a valid 12-14 character alphanumeric UUCMS number" required>
+                        minlength="12" title="Please enter a valid 12-14 character alphanumeric UUCMS number"
+                        value="{{ student_id|default:'' }}" required>
                 </div>
 
                 <div class="form-group">
                     <label for="email" class="form-label">College Email Address</label>
                     <input type="email" name="email" id="email" class="form-input" placeholder="student@sfscollege.in"
                         pattern=".+@sfscollege\.in" title="Please enter a valid college ID ending with @sfscollege.in"
-                        required>
+                        value="{{ email|default:'' }}" required>
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem;">
