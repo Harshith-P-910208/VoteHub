@@ -37,7 +37,7 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
-DEBUG = True
+DEBUG = env('DEBUG')
 
 # CSRF & Session Security
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
