@@ -37,7 +37,8 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
-DEBUG = env('DEBUG')
+DEBUG = True # Forced True for real-time debugging on Render
+
 
 # CSRF & Session Security
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
@@ -136,13 +137,11 @@ else:
             'ENFORCE_SCHEMA': False,
             'CLIENT': {
                 'host': 'mongodb+srv://harshithpharshithp438_db_user:0pTOCZlWbnxs4ank@voters.h7rktd3.mongodb.net/college_voting_db?appName=Voters',
-                'serverSelectionTimeoutMS': 30000,
-                'connectTimeoutMS': 30000,
-                'socketTimeoutMS': 60000,
+                'serverSelectionTimeoutMS': 20000,
+                'connectTimeoutMS': 20000,
                 'retryWrites': True,
-                'w': 'majority',
-                'authSource': 'admin',
             }
+
         }
     }
 
