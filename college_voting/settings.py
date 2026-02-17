@@ -37,7 +37,35 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
-DEBUG = True # Forced True for real-time debugging on Render
+DEBUG = False # Set to False to save memory
+
+# Logging for production
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'accounts': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
 
 
 # CSRF & Session Security

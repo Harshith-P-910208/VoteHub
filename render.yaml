@@ -4,7 +4,8 @@ services:
     env: python
     plan: free
     buildCommand: bash build.sh
-    startCommand: gunicorn college_voting.wsgi:application
+    startCommand: gunicorn college_voting.wsgi:application --workers 1 --threads 2 --timeout 60 --max-requests 50
+
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
