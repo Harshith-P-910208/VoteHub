@@ -135,15 +135,10 @@ else:
             'ENFORCE_SCHEMA': False,
             'CLIENT': {
                 'host': 'mongodb+srv://harshithpharshithp438_db_user:0pTOCZlWbnxs4ank@voters.h7rktd3.mongodb.net/college_voting_db?appName=Voters',
-                'serverSelectionTimeoutMS': 5000,
-                'connectTimeoutMS': 10000,
-                'socketTimeoutMS': 45000,
+                'serverSelectionTimeoutMS': 20000,
+                'connectTimeoutMS': 20000,
                 'retryWrites': True,
-                'w': 'majority',
-                # Critical for Vercel/Serverless
-                'maxPoolSize': 1, # Prevent connection pool exhaustion
-                'minPoolSize': 0,
-                'maxIdleTimeMS': 10000
+                'authSource': 'admin',
             }
         }
     }
