@@ -37,7 +37,8 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
-DEBUG = False # Set to False to save memory
+DEBUG = env.bool('DEBUG', default=True)
+
 
 # Logging for production
 LOGGING = {
@@ -220,7 +221,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Standard directory for static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Media files (User uploaded content)
 # Use Cloudinary for storage in production if credentials are provided
