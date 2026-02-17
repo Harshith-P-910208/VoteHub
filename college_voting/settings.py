@@ -40,7 +40,8 @@ ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.n
 DEBUG = env('DEBUG')
 
 # CSRF & Session Security
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
