@@ -136,9 +136,11 @@ else:
             'ENFORCE_SCHEMA': False,
             'CLIENT': {
                 'host': 'mongodb+srv://harshithpharshithp438_db_user:0pTOCZlWbnxs4ank@voters.h7rktd3.mongodb.net/college_voting_db?appName=Voters',
-                'serverSelectionTimeoutMS': 20000,
-                'connectTimeoutMS': 20000,
+                'serverSelectionTimeoutMS': 30000,
+                'connectTimeoutMS': 30000,
+                'socketTimeoutMS': 60000,
                 'retryWrites': True,
+                'w': 'majority',
                 'authSource': 'admin',
             }
         }
@@ -222,9 +224,9 @@ SESSION_COOKIE_AGE = 3600  # 1 hour
 
 # Email Configuration (SMTP for Real Email Sending)
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='accounts.backend.EmailBackend')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='verify@sfscollege.in')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='harshithpharshithp438@gmail.com')
 EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = env('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='harshithpharshithp438@gmail.com')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='xcnhqobvmncvhbhj')
