@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import environ
+import socket
 
 # Initialize environment variables
 env = environ.Env(
@@ -36,8 +37,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-prod-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost', '127.0.0.1:8001', 'localhost:8001']
+ALLOWED_HOSTS = ['*', '.onrender.com', '.pythonanywhere.com', '.vercel.app', '.now.sh', '127.0.0.1', 'localhost']
 DEBUG = env.bool('DEBUG', default=True)
+
+# Add local IP to ALLOWED_HOSTS for network access
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+LOCAL_IP = get_ip()
+if LOCAL_IP not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(LOCAL_IP)
 
 
 # Logging for production
@@ -90,6 +107,8 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8001',
     'http://127.0.0.1:8001',
+    f'http://{LOCAL_IP}:8000',
+    f'http://{LOCAL_IP}:8001',
     'https://*.onrender.com',
 ]
 
