@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# exit on error
+# Exit on error
 set -o errexit
 
-# Install dependencies
+echo "==> Installing dependencies..."
 pip install -r requirements.txt
 
-# Collect static files
+echo "==> Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Run migrations (won't break the build if DB is unreachable)
-python manage.py migrate --noinput || echo "Migration failed or database unreachable during build. Skipping..."
+echo "==> Running database migrations..."
+python manage.py migrate --noinput || echo "Migration skipped (DB may not be ready)"
+
+echo "==> Build complete!"

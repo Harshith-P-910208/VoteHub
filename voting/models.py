@@ -1,10 +1,9 @@
-from djongo import models
+from django.db import models
 from django.utils import timezone
 from accounts.models import User
 
 
 class Election(models.Model):
-    _id = models.ObjectIdField()
     title = models.CharField(max_length=200)
     description = models.TextField()
     start_date = models.DateTimeField()
@@ -31,8 +30,8 @@ class Election(models.Model):
 
 
 class Candidate(models.Model):
-    _id = models.ObjectIdField()
-    election_id = models.CharField(max_length=100)  # Store election ObjectId as string
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, null=True, blank=True)
+    election_id_str = models.CharField(max_length=100, blank=True)  # legacy string reference
     name = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='candidates/', null=True, blank=True)
@@ -57,7 +56,6 @@ class LocationData(models.Model):
 
 
 class Vote(models.Model):
-    _id = models.ObjectIdField()
     election_id = models.CharField(max_length=100)
     candidate_id = models.CharField(max_length=100)
     voter_email = models.EmailField()

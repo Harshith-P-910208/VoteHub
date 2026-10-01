@@ -1,4 +1,4 @@
-from djongo import models
+from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ValidationError
 import re
@@ -24,7 +24,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    _id = models.ObjectIdField()
+
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=200)
     student_id = models.CharField(max_length=50, unique=True)

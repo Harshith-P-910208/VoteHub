@@ -167,30 +167,24 @@ WSGI_APPLICATION = 'college_voting.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# MongoDB Configuration
-# Use dummy database for collectstatic to prevent build failures
+# Database configuration
+# Uses SQLite locally; set DATABASE_URL on Render/cloud for production
 import sys
-if 'collectstatic' in sys.argv:
+
+DATABASE_URL = env('DATABASE_URL', default='')
+
+if 'collectstatic' in sys.argv or not DATABASE_URL:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
 else:
+    # On Render or any cloud provider, set DATABASE_URL to a PostgreSQL connection string
+    import dj_database_url
     DATABASES = {
-        'default': {
-            'ENGINE': 'djongo',
-            'NAME': 'college_voting_db',
-            'ENFORCE_SCHEMA': False,
-            'CLIENT': {
-                'host': env('DATABASE_URL', default='mongodb://localhost:27017/college_voting_db'),
-                'serverSelectionTimeoutMS': 20000,
-                'connectTimeoutMS': 20000,
-                'retryWrites': True,
-                'authSource': 'admin',
-            }
-        }
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
 
 # Custom User Model
